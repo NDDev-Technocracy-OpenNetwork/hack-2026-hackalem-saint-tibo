@@ -7,19 +7,22 @@ repository:
   lifecycle: active
 provider:
   type: github
-  installation: installation:github-nddev-technocracy-opennetwork
+  installation: installation:github-personal
   repository_id: 1416348467
-  owner: NDDev-Technocracy-OpenNetwork
+  owner: rldyourmnd
   name: hack-2026-hackalem-saint-tibo
+  aliases:
+  - owner: NDDev-Technocracy-OpenNetwork
+    name: hack-2026-hackalem-saint-tibo
 classification:
   portfolios:
-  - portfolio:nddev-technocracy-opennetwork
+  - portfolio:rldyourmnd
   visibility_contract: public
   data_classification: public
 policy:
   profiles:
   - repository-default
-  - organization-default
+  - personal-default
   rollout_ring: standard
 git:
   default_branch: main

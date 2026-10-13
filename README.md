@@ -3,7 +3,7 @@
 
 HackAlem 2026, Saint Tibo: Khattama meeting-to-minutes prototype with speech, speaker attribution, tasks and PDF/DOCX export.
 
-[NDDev OpenNetwork](https://github.com/NDDev-Technocracy-OpenNetwork) · [Repository](https://github.com/NDDev-Technocracy-OpenNetwork/hack-2026-hackalem-saint-tibo)
+[NDDev OpenNetwork](https://github.com/NDDev-Technocracy-OpenNetwork) · [Repository](https://github.com/rldyourmnd/hack-2026-hackalem-saint-tibo)
 
 This repository is a hackathon prototype or supporting tool. Follow the project-specific setup below; cloud integrations require your own configuration and credentials.
 
