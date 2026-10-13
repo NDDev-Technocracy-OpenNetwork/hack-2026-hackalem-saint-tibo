@@ -19,7 +19,8 @@ class ProcessingJobCreate(BaseModel):
     target_stage: Literal["transcribe", "diarize", "extract"] = Field(
         default="transcribe",
         description=(
-            "Diarize adds anonymous speaker intervals; extract also adds an unreviewed local-model draft."
+            "Diarize adds anonymous speaker intervals; "
+            "extract also adds an unreviewed local-model draft."
         ),
     )
 

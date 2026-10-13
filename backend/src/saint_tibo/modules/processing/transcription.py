@@ -23,25 +23,61 @@ async def transcribe(
 ) -> tuple[list[TranscriptSegment], str, str, str]:
     remote = config.stt_remote_enabled
     if remote:
-        if (not config.stt_remote_host or not config.stt_remote_identity_file.is_file()
-                or not config.stt_remote_known_hosts_file.is_file()):
-            raise APIError(503, "transcription_unavailable", "The remote STT runtime is unavailable")
+        if (
+            not config.stt_remote_host
+            or not config.stt_remote_identity_file.is_file()
+            or not config.stt_remote_known_hosts_file.is_file()
+        ):
+            raise APIError(
+                503, "transcription_unavailable", "The remote STT runtime is unavailable"
+            )
         command = [
-            "/usr/bin/ssh", "-F", "/dev/null", "-T", "-o", "BatchMode=yes",
-            "-o", "IdentitiesOnly=yes", "-o", "IdentityAgent=none",
-            "-o", "StrictHostKeyChecking=yes", "-o", "GlobalKnownHostsFile=/dev/null",
-            "-o", f"UserKnownHostsFile={config.stt_remote_known_hosts_file}",
-            "-o", "ConnectTimeout=10", "-o", "ServerAliveInterval=5",
-            "-o", "ServerAliveCountMax=2", "-o", "LogLevel=ERROR",
-            "-i", str(config.stt_remote_identity_file), "-p", str(config.stt_remote_port),
-            "-l", config.stt_remote_user, "--", config.stt_remote_host,
+            "/usr/bin/ssh",
+            "-F",
+            "/dev/null",
+            "-T",
+            "-o",
+            "BatchMode=yes",
+            "-o",
+            "IdentitiesOnly=yes",
+            "-o",
+            "IdentityAgent=none",
+            "-o",
+            "StrictHostKeyChecking=yes",
+            "-o",
+            "GlobalKnownHostsFile=/dev/null",
+            "-o",
+            f"UserKnownHostsFile={config.stt_remote_known_hosts_file}",
+            "-o",
+            "ConnectTimeout=10",
+            "-o",
+            "ServerAliveInterval=5",
+            "-o",
+            "ServerAliveCountMax=2",
+            "-o",
+            "LogLevel=ERROR",
+            "-i",
+            str(config.stt_remote_identity_file),
+            "-p",
+            str(config.stt_remote_port),
+            "-l",
+            config.stt_remote_user,
+            "--",
+            config.stt_remote_host,
             shlex.join(["/usr/bin/python3", "-I", config.stt_remote_runner_path]),
         ]
     else:
         if not config.stt_python_path.is_file() or not config.stt_script_path.is_file():
             raise APIError(503, "transcription_unavailable", "The local STT runtime is unavailable")
-        command = [str(config.stt_python_path), str(config.stt_script_path), str(path),
-                   "--model-dir", str(config.stt_model_path), "--language", language]
+        command = [
+            str(config.stt_python_path),
+            str(config.stt_script_path),
+            str(path),
+            "--model-dir",
+            str(config.stt_model_path),
+            "--language",
+            language,
+        ]
     process = await asyncio.create_subprocess_exec(
         *command,
         stdin=asyncio.subprocess.PIPE if remote else asyncio.subprocess.DEVNULL,
@@ -50,7 +86,9 @@ async def transcribe(
         limit=128 * 1024,
         start_new_session=True,
     )
-    sender = asyncio.create_task(send_remote_audio(process, path, language, config)) if remote else None
+    sender = (
+        asyncio.create_task(send_remote_audio(process, path, language, config)) if remote else None
+    )
     assert process.stdout is not None
     segments: list[TranscriptSegment] = []
     detected_language: str | None = None
@@ -120,9 +158,7 @@ async def transcribe(
             raise APIError(422, "speech_not_detected", "No speech segments were recognized")
         return segments, detected_language, model_id, model_revision
     except ValueError as exc:
-        raise APIError(
-            503, "invalid_transcription_output", "STT returned invalid output"
-        ) from exc
+        raise APIError(503, "invalid_transcription_output", "STT returned invalid output") from exc
     finally:
         if sender is not None:
             sender.cancel()
@@ -160,7 +196,10 @@ async def transcribe(
 
 
 async def send_remote_audio(
-    process: asyncio.subprocess.Process, path: Path, language: str, config: Settings,
+    process: asyncio.subprocess.Process,
+    path: Path,
+    language: str,
+    config: Settings,
 ) -> None:
     assert process.stdin is not None
     try:
@@ -168,8 +207,12 @@ async def send_remote_audio(
             size = os.fstat(audio.fileno()).st_size
             if not 44 <= size <= config.recording_max_bytes:
                 raise ValueError("Invalid remote audio size")
-            header = {"version": 1, "bytes": size, "language": language,
-                      "timeout": min(config.processing_timeout_seconds, 7200)}
+            header = {
+                "version": 1,
+                "bytes": size,
+                "language": language,
+                "timeout": min(config.processing_timeout_seconds, 7200),
+            }
             process.stdin.write(json.dumps(header).encode() + b"\n")
             remaining = size
             while remaining:
