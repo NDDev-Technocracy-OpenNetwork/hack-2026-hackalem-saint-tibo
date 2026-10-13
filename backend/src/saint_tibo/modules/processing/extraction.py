@@ -36,25 +36,56 @@ async def extract(
             or not config.extract_remote_identity_file.is_file()
             or not config.stt_remote_known_hosts_file.is_file()
         ):
-            raise APIError(503, "extraction_unavailable", "The private extraction runtime is unavailable")
+            raise APIError(
+                503, "extraction_unavailable", "The private extraction runtime is unavailable"
+            )
         command = [
-            "/usr/bin/ssh", "-F", "/dev/null", "-T", "-o", "BatchMode=yes",
-            "-o", "IdentitiesOnly=yes", "-o", "IdentityAgent=none",
-            "-o", "StrictHostKeyChecking=yes", "-o", "GlobalKnownHostsFile=/dev/null",
-            "-o", f"UserKnownHostsFile={config.stt_remote_known_hosts_file}",
-            "-o", "ConnectTimeout=10", "-o", "ServerAliveInterval=5",
-            "-o", "ServerAliveCountMax=2", "-o", "LogLevel=ERROR",
-            "-i", str(config.extract_remote_identity_file), "-p", str(config.stt_remote_port),
-            "-l", config.stt_remote_user, "--", config.stt_remote_host,
+            "/usr/bin/ssh",
+            "-F",
+            "/dev/null",
+            "-T",
+            "-o",
+            "BatchMode=yes",
+            "-o",
+            "IdentitiesOnly=yes",
+            "-o",
+            "IdentityAgent=none",
+            "-o",
+            "StrictHostKeyChecking=yes",
+            "-o",
+            "GlobalKnownHostsFile=/dev/null",
+            "-o",
+            f"UserKnownHostsFile={config.stt_remote_known_hosts_file}",
+            "-o",
+            "ConnectTimeout=10",
+            "-o",
+            "ServerAliveInterval=5",
+            "-o",
+            "ServerAliveCountMax=2",
+            "-o",
+            "LogLevel=ERROR",
+            "-i",
+            str(config.extract_remote_identity_file),
+            "-p",
+            str(config.stt_remote_port),
+            "-l",
+            config.stt_remote_user,
+            "--",
+            config.stt_remote_host,
             shlex.join(["/usr/bin/python3", "-I", config.extract_remote_runner_path]),
         ]
     else:
         if not config.extract_script_path.is_file() or not config.extract_model_path.is_file():
-            raise APIError(503, "extraction_unavailable", "The local extraction bundle is unavailable")
+            raise APIError(
+                503, "extraction_unavailable", "The local extraction bundle is unavailable"
+            )
         command = [
-            str(config.stt_python_path), str(config.extract_script_path),
-            "--llama-server", str(config.extract_runtime_path),
-            "--model-file", str(config.extract_model_path),
+            str(config.stt_python_path),
+            str(config.extract_script_path),
+            "--llama-server",
+            str(config.extract_runtime_path),
+            "--model-file",
+            str(config.extract_model_path),
         ]
     labels = speaker_labels if speaker_labels is not None else [None] * len(segments)
     if len(labels) != len(segments) or len(segment_ids) != len(segments):
@@ -70,11 +101,15 @@ async def extract(
         ensure_ascii=False,
     ).encode()
     if len(request) > 65536:
-        raise APIError(422, "extraction_input_too_large", "Transcript exceeds the local model limit")
+        raise APIError(
+            422, "extraction_input_too_large", "Transcript exceeds the local model limit"
+        )
     process = await asyncio.create_subprocess_exec(
         *command,
-        stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.DEVNULL, start_new_session=True,
+        stdin=asyncio.subprocess.PIPE,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.DEVNULL,
+        start_new_session=True,
     )
     assert process.stdin is not None and process.stdout is not None
     sender = asyncio.create_task(send_remote_request(process, request)) if remote else None
@@ -95,12 +130,20 @@ async def extract(
                 raise ValueError("Invalid output envelope")
             if event.get("status") != "ok" or code != 0:
                 error = event.get("code")
-                allowed = {"extraction_unavailable", "extraction_bundle_mismatch",
-                           "extraction_runtime_failed", "extraction_start_timeout",
-                           "extraction_incomplete", "invalid_extraction_output",
-                           "extraction_input_too_large"}
-                raise APIError(503, error if error in allowed else "extraction_failed",
-                               "Extraction did not finish")
+                allowed = {
+                    "extraction_unavailable",
+                    "extraction_bundle_mismatch",
+                    "extraction_runtime_failed",
+                    "extraction_start_timeout",
+                    "extraction_incomplete",
+                    "invalid_extraction_output",
+                    "extraction_input_too_large",
+                }
+                raise APIError(
+                    503,
+                    error if error in allowed else "extraction_failed",
+                    "Extraction did not finish",
+                )
             payload = event["payload"]
 
             def refs(values: object) -> list[UUID]:
@@ -110,11 +153,16 @@ async def extract(
                     raise ValueError("Invalid source reference")
                 return list(dict.fromkeys(segment_ids[i] for i in values))
 
-            items = [ReviewActionItem(
-                text=row["text"], assignee_text=row["assignee_text"],
-                due_text=row["due_text"], due_date=row["due_date"],
-                source_segment_ids=refs(row["source_segment_ids"]),
-            ) for row in payload["action_items"]]
+            items = [
+                ReviewActionItem(
+                    text=row["text"],
+                    assignee_text=row["assignee_text"],
+                    due_text=row["due_text"],
+                    due_date=row["due_date"],
+                    source_segment_ids=refs(row["source_segment_ids"]),
+                )
+                for row in payload["action_items"]
+            ]
             source_ids: set[UUID] = set()
             summary = {}
             for key in ("topics", "decisions", "open_questions"):
@@ -132,7 +180,9 @@ async def extract(
             logger.info("extraction_finished action_item_count=%s remote=%s", len(items), remote)
             return draft
     except (ValueError, KeyError, TypeError, IndexError) as exc:
-        raise APIError(503, "invalid_extraction_output", "Extraction returned invalid output") from exc
+        raise APIError(
+            503, "invalid_extraction_output", "Extraction returned invalid output"
+        ) from exc
     except TimeoutError as exc:
         raise APIError(503, "extraction_timeout", "Extraction timed out") from exc
     finally:
@@ -140,7 +190,8 @@ async def extract(
 
 
 async def stop_extraction(
-    process: asyncio.subprocess.Process, sender: asyncio.Task[None] | None,
+    process: asyncio.subprocess.Process,
+    sender: asyncio.Task[None] | None,
 ) -> None:
     assert process.stdout is not None
     drainer = asyncio.create_task(discard_output(process.stdout))

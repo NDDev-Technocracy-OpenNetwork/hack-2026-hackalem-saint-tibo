@@ -1,4 +1,15 @@
-# Saint Tibo · Хаттама
+<!-- nddev-public-hackathon -->
+# hack-2026-hackalem-saint-tibo
+
+HackAlem 2026, Saint Tibo: Khattama meeting-to-minutes prototype with speech, speaker attribution, tasks and PDF/DOCX export.
+
+[NDDev OpenNetwork](https://github.com/NDDev-Technocracy-OpenNetwork) · [Repository](https://github.com/NDDev-Technocracy-OpenNetwork/hack-2026-hackalem-saint-tibo)
+
+This repository is a hackathon prototype or supporting tool. Follow the project-specific setup below; cloud integrations require your own configuration and credentials.
+
+---
+
+## Saint Tibo · Хаттама
 
 **От записи совещания — к проверяемому протоколу и поручениям.**
 Прототип команды Saint Tibo для BAITC Hacks: распознаёт речь, разделяет
