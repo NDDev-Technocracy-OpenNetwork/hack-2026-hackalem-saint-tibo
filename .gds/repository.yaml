@@ -1,0 +1,50 @@
+schema_version: 1
+repository:
+  id: repo_01M4SRH681RDK569PBWK4JBN3M
+  display_name: hack-2026-hackalem-saint-tibo
+  roles:
+  - project
+  lifecycle: active
+provider:
+  type: github
+  installation: installation:github-nddev-technocracy-opennetwork
+  repository_id: 1416348467
+  owner: NDDev-Technocracy-OpenNetwork
+  name: hack-2026-hackalem-saint-tibo
+classification:
+  portfolios:
+  - portfolio:nddev-technocracy-opennetwork
+  visibility_contract: public
+  data_classification: public
+policy:
+  profiles:
+  - repository-default
+  - organization-default
+  rollout_ring: standard
+git:
+  default_branch: main
+  integration: pull-request
+  branch_model: task-branches
+  handoff_pr: never
+  cleanup: manual
+agent:
+  context_profile: project-default
+  generated_agents: false
+  serena:
+    enabled: false
+    provenance_required: false
+release:
+  mode: none
+product:
+  purpose: 'Public Saint Tibo fork: meeting-to-minutes hackathon prototype with transcription,
+    tasks and document export.'
+fork:
+  upstream:
+    provider: github
+    repository_id: 1360443645
+    owner: BAITC-Hacks
+    name: hack-a58598e0-saint-tibo
+  policy: maintained-patch
+  sync_branch: main
+  preserve_fork_commits: true
+  allow_force_sync: false
